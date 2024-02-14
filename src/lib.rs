@@ -1,2 +1,2 @@
-pub mod grid;
+pub mod wave;
 pub mod tile;

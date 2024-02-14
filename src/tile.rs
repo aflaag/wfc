@@ -1,6 +1,19 @@
 use std::fmt;
 
-pub trait Tile: PartialEq + Eq + Clone + Copy {}
+pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display {}
+
+// #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// pub enum TilePosition {
+//     Center,
+//     Top,
+//     Bottom,
+//     Left,
+//     Right,
+//     TopLeft,
+//     TopRight,
+//     BottomLeft,
+//     BottomRight,
+// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MazeTile {

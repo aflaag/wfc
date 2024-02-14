@@ -1,5 +1,12 @@
-use wfc::{grid::Grid, tile::MazeTile};
+use wfc::{wave::Wave, tile::MazeTile};
+use rand::thread_rng;
 
 fn main() {
-    let mut grid = Grid::<MazeTile>::new(10, 10, vec![]);
+    let rng = thread_rng();
+
+    let mut wave = Wave::<_, MazeTile>::new(10, 10, vec![], rng).unwrap();
+
+    if wave.collapse().is_ok() {
+        println!("{}", wave);
+    }
 }
