@@ -1,7 +1,8 @@
 use std::fmt;
 
-pub trait Tile {}
+pub trait Tile: PartialEq + Eq + Clone + Copy {}
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MazeTile {
     /// Represents `╦`
     TShaped,
