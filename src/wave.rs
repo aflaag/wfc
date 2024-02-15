@@ -52,8 +52,6 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
 
         let mut options_bitmask: usize = 0;
 
-        // if let Some(upper_row) = self.tiles.get(y - 1) {
-        //     let top = upper_row[x].0;
         if let Some(diff) = y.checked_sub(1) {
             let top = self.tiles[diff][x];
 

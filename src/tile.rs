@@ -25,7 +25,7 @@ pub enum MazeTile {
     TopLeftCorner,
 
     /// Represents `╚`
-    BottoLeftCorner,
+    BottomLeftCorner,
 
     /// Represents `╝`
     BottomRightCorner,
@@ -51,7 +51,7 @@ impl fmt::Display for MazeTile {
             Self::TShapedUpsideDown => write!(f, "╩"),
             Self::TopRightCorner => write!(f, "╗"),
             Self::TopLeftCorner => write!(f, "╔"),
-            Self::BottoLeftCorner => write!(f, "╚"),
+            Self::BottomLeftCorner => write!(f, "╚"),
             Self::BottomRightCorner => write!(f, "╝"),
             Self::HorizontalLine => write!(f, "═"),
             Self::VerticalLine => write!(f, "║"),
