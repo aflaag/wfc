@@ -38,6 +38,9 @@ pub enum MazeTile {
 
     /// Represents `╬`
     CenterCross,
+    
+    /// Represents ` `
+    Empty
 }
 
 impl Tile for MazeTile {}
@@ -56,6 +59,7 @@ impl fmt::Display for MazeTile {
             Self::HorizontalLine => write!(f, "═"),
             Self::VerticalLine => write!(f, "║"),
             Self::CenterCross => write!(f, "╬"),
+            Self::Empty => write!(f, " "),
         }
     }
 }
