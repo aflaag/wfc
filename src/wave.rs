@@ -1,7 +1,9 @@
-use crate::tile::{Tile};
+use crate::tile::Tile;
+
+use std::fmt;
 
 use rand::{Rng, seq::IteratorRandom};
-use std::fmt;
+use bitvec::prelude::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
@@ -39,15 +41,100 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
         self.rules.push(rule)
     }
 
-    // fn get_neighbours(&self, (x, y): (usize, usize)) -> TilePosition {
-    //     if x == self.width - 1 {
-    //         if y == self.width - 1 {
-    //             TilePosition::BottomRight
-    //         } else {
-    //             TilePosition
-    //         }
-    //     }
-    // }
+    fn update_bitmask(options_bitmask: &mut usize, idx: usize) {
+        if (*options_bitmask << idx) & 1 == 0 {
+            *options_bitmask += 2 << (idx - 1);
+        }
+    }
+
+    fn update_entropy(&mut self, (x, y): (usize, usize)) -> Result<(), WaveError> {
+        let mut none_neighbours = 0;
+
+        let mut options_bitmask: usize = 0;
+
+        // if let Some(upper_row) = self.tiles.get(y - 1) {
+        //     let top = upper_row[x].0;
+        if let Some(diff) = y.checked_sub(1) {
+            let top = self.tiles[diff][x];
+
+            if let Some(top_tile) = top.0 {
+                T::iter()
+                    .enumerate()
+                    .for_each(|(idx, tile_variant)| {
+                        if self.rules.iter().any(|&r| r == (tile_variant, top_tile, Direction::Right)) {
+                            Self::update_bitmask(&mut options_bitmask, idx);
+                        }
+                    })
+            } else {
+                none_neighbours += 1;
+            }
+        }
+
+        if let Some(bottom_row) = self.tiles.get(y + 1) {
+            let bottom = bottom_row[x];
+
+            if let Some(bottom_tile) = bottom.0 {
+                T::iter()
+                    .enumerate()
+                    .for_each(|(idx, tile_variant)| {
+                        if self.rules.iter().any(|&r| r == (tile_variant, bottom_tile, Direction::Right)) {
+                            Self::update_bitmask(&mut options_bitmask, idx);
+                        }
+                    })
+            } else {
+                none_neighbours += 1;
+            }
+        }
+
+        if let Some(diff) = x.checked_sub(1) {
+            let left = self.tiles[y][diff];
+
+            if let Some(left_tile) = left.0 {
+                T::iter()
+                    .enumerate()
+                    .for_each(|(idx, tile_variant)| {
+                        if self.rules.iter().any(|&r| r == (tile_variant, left_tile, Direction::Right)) {
+                            Self::update_bitmask(&mut options_bitmask, idx);
+                        }
+                    })
+            } else {
+                none_neighbours += 1;
+            }
+        }
+
+        if let Some(right) = self.tiles.get(y).unwrap().get(x + 1) {
+            if let Some(right_tile) = right.0 {
+                T::iter()
+                    .enumerate()
+                    .for_each(|(idx, tile_variant)| {
+                        if self.rules.iter().any(|&r| r == (tile_variant, right_tile, Direction::Right)) {
+                            Self::update_bitmask(&mut options_bitmask, idx);
+                        }
+                    })
+            } else {
+                none_neighbours += 1;
+            }
+        }
+
+        self.tiles[y][x] = if none_neighbours == 4 {
+            (T::iter().choose(&mut self.rng), 0)
+        } else {
+            if let Some(chosen_idx) = <[usize; 1] as Into<BitArray<[usize; 1]>>>::into([options_bitmask])
+                .iter()
+                .enumerate()
+                .filter(|(_, bit)| *bit == true)
+                .map(|(idx, _)| idx)
+                .take(T::iter().len())
+                .choose(&mut self.rng)
+            {
+                (T::iter().nth(chosen_idx), 0)
+            } else {
+                return Err(WaveError::UncollapsibleWave);
+            }
+        };
+
+        Ok(())
+    }
 
     pub fn collapse(&mut self) -> Result<(), WaveError> {
         let mut collapsed = 0;
@@ -69,93 +156,44 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
                 .tiles
                 .iter()
                 .enumerate()
-                .map(|(y, row)| row
+                .flat_map(|(y, row)| row
                      .iter()
                      .enumerate()
                      .filter(|(_, tile)| tile.1 == lowest_entropy)
                      .map(move |(x, _)| (x, y))
                 )
-                .flatten()
                 .choose(&mut self.rng)
                 .unwrap(); // TODO: check
 
-            println!("{:?}", (tile_x, tile_y));
+            // println!("{:?}", (tile_x, tile_y));
 
-            // if let Some(upper_row) = self.tiles.get(tile_y - 1) {
-            //     if let Some(right_row) = upper_row.get(tile_x + 1) {
-            //         if let Some(left_row) = upper_row.get(tile_x - 1) {
-            //
-            //         }
-            //     } else {
-            //     }
-            // }
-
-            // if x == self.width - 1 {
-            //     if y == self.height {
-            //         // up
-            //         // left
-            //     }
-            //
-            //     // right
-            // } else if x == 0 {
-            //     if y == 0 {
-            //         // right
-            //         // down
-            //     }
-            //
-            //     // left
-            // }
-
-            // let chosen_tile = (0..self.height)
-            //     .map(|y| {
-            //         (0..self.width)
-            //             .map(|x| )
-            //     })
-
-            // let mut lowest_entropy_tiles_count = self
-            //     .tiles
-            //     .iter()
-            //     .map(|row| row
-            //          .iter()
-            //          .map(|tile| )
-            //          .fold(0, |acc, x| acc + x)
-            //      )
-            //     .fold(0, |acc, x| acc + x);
+            if self.update_entropy((tile_x, tile_y)).is_ok() {
+                collapsed += 1;
+            } else {
+                return Err(WaveError::NotFullyCollapsed);
+            }
         }
         
         Ok(())
     }
-
-    // fn entropy(&self, (x, y): (usize, usize)) -> f32 {
-    //     if let Some(tile) = self.tiles[y][x].0 {
-    //         let mut entropy = 0.0;
-    //
-    //         if x < self.width {
-    //             if let Some(right_neighbour) = self.tiles[y][x + 1].0 {
-    //                 if self.rules.iter().any(|&r| r == (tile, right_neighbour, Direction::Right)) {
-    //                     entropy += 1.0
-    //                 }
-    //             }
-    //         }
-    //
-    //         entropy
-    //     } else {
-    //         f32::INFINITY
-    //     }
-    // }
 }
 
 impl<R: Rng + ?Sized + Clone, T: Tile> fmt::Display for Wave<R, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.tiles.iter().map(|row| {
-            row.iter().map(|tile| {
-                if let Some(v) = tile.0 {
-                    write!(f, "{}", v)
-                } else {
-                    write!(f, "X")
-                }
-            }).collect()
-        }).collect()
+        self
+            .tiles
+            .iter()
+            .try_for_each(|row| {
+                row
+                    .iter()
+                    .try_for_each(|tile| {
+                        if let Some(v) = tile.0 {
+                            write!(f, "{}", v)
+                        } else {
+                            write!(f, "X")
+                        }
+                    })
+            })
     }
 }
 
@@ -163,6 +201,7 @@ impl<R: Rng + ?Sized + Clone, T: Tile> fmt::Display for Wave<R, T> {
 pub enum WaveError {
     ZeroDimension,
     NotFullyCollapsed,
+    UncollapsibleWave,
 }
 
 impl std::fmt::Display for WaveError {
@@ -170,6 +209,7 @@ impl std::fmt::Display for WaveError {
         match *self {
             Self::ZeroDimension => writeln!(f, "Dimensions can't be 0."),
             Self::NotFullyCollapsed => writeln!(f, "The wave has not fully collapsed."),
+            Self::UncollapsibleWave => writeln!(f, "Tha wave can't be collapsed any further.")
         }
     }
 }

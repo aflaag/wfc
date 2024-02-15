@@ -1,21 +1,10 @@
 use std::fmt;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
-pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display {}
+pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display + IntoEnumIterator {}
 
-// #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-// pub enum TilePosition {
-//     Center,
-//     Top,
-//     Bottom,
-//     Left,
-//     Right,
-//     TopLeft,
-//     TopRight,
-//     BottomLeft,
-//     BottomRight,
-// }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter)]
 pub enum MazeTile {
     /// Represents `╦`
     TShaped,

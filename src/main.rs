@@ -6,7 +6,7 @@ fn main() {
 
     let mut wave = Wave::<_, MazeTile>::new(10, 10, vec![], rng).unwrap();
 
-    if wave.collapse().is_ok() {
-        println!("{}", wave);
-    }
+    let _ = wave.collapse();
+
+    println!("{}", wave);
 }

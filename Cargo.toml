@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
+strum = "0.26"
+strum_macros = "0.26"
+bitvec = "1"
