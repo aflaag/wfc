@@ -2,9 +2,10 @@ use wfc::{tile::MazeTile, wave::{Direction, Wave}};
 use rand::thread_rng;
 
 fn main() {
-    let rng = thread_rng();
+    let mut rng = thread_rng();
 
-    let mut wave = Wave::<_, MazeTile>::new(40, 20, vec![], rng).unwrap();
+    // let mut wave = Wave::<MazeTile>::new(2, 2, vec![]).unwrap();
+    let mut wave = Wave::<MazeTile>::new(100, 50, vec![]).unwrap();
 
     // rules for `╦`
     wave.add_rule((MazeTile::TShaped, MazeTile::TShapedUpsideDown, Direction::Up));
@@ -418,7 +419,7 @@ fn main() {
     wave.add_rule((MazeTile::Empty, MazeTile::CenterCross, Direction::Right));
     wave.add_rule((MazeTile::Empty, MazeTile::Empty, Direction::Right));
 
-    let _ = wave.collapse();
+    let _ = wave.collapse(&mut rng);
 
     // TODO: FIX THIS
     // println!("{}", wave);

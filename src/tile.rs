@@ -48,17 +48,17 @@ impl Tile for MazeTile {}
 impl fmt::Display for MazeTile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::TShaped => write!(f, "╦"),
-            Self::TShapedLeft => write!(f, "╣"),
-            Self::TShapedRight => write!(f, "╠"),
-            Self::TShapedUpsideDown => write!(f, "╩"),
-            Self::TopRightCorner => write!(f, "╗"),
-            Self::TopLeftCorner => write!(f, "╔"),
-            Self::BottomLeftCorner => write!(f, "╚"),
-            Self::BottomRightCorner => write!(f, "╝"),
-            Self::HorizontalLine => write!(f, "═"),
-            Self::VerticalLine => write!(f, "║"),
-            Self::CenterCross => write!(f, "╬"),
+            Self::TShaped => write!(f, "┳"),
+            Self::TShapedLeft => write!(f, "┫"),
+            Self::TShapedRight => write!(f, "┣"),
+            Self::TShapedUpsideDown => write!(f, "┻"),
+            Self::TopRightCorner => write!(f, "┓"),
+            Self::TopLeftCorner => write!(f, "┏"),
+            Self::BottomLeftCorner => write!(f, "┗"),
+            Self::BottomRightCorner => write!(f, "┛"),
+            Self::HorizontalLine => write!(f, "━"),
+            Self::VerticalLine => write!(f, "┃"),
+            Self::CenterCross => write!(f, "╋"),
             Self::Empty => write!(f, " "),
         }
     }

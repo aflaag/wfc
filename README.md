@@ -2,9 +2,9 @@
 
 ## TODO list
 
-- fix the entropy which isn't used right now
+- rifai le regole del vuoto affinché si generino meno vuoti
 
-- how the f is it possibile that i have still X tiles even with the empty variant?!
+- leggi telegram
 
 - fix \n in wave print
 
