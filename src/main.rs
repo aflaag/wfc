@@ -365,6 +365,59 @@ fn main() {
     wave.add_rule((MazeTile::CenterCross, MazeTile::CenterCross, Direction::Right));
     wave.add_rule((MazeTile::CenterCross, MazeTile::Empty, Direction::Right));
 
+    // rules for ` `
+    wave.add_rule((MazeTile::Empty, MazeTile::TShaped, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedLeft, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedRight, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedUpsideDown, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopRightCorner, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopLeftCorner, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomLeftCorner, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomRightCorner, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::HorizontalLine, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::VerticalLine, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::CenterCross, Direction::Up));
+    wave.add_rule((MazeTile::Empty, MazeTile::Empty, Direction::Up));
+
+    wave.add_rule((MazeTile::Empty, MazeTile::TShaped, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedLeft, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedRight, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedUpsideDown, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopRightCorner, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopLeftCorner, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomLeftCorner, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomRightCorner, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::HorizontalLine, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::VerticalLine, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::CenterCross, Direction::Down));
+    wave.add_rule((MazeTile::Empty, MazeTile::Empty, Direction::Down));
+
+    wave.add_rule((MazeTile::Empty, MazeTile::TShaped, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedLeft, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedRight, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedUpsideDown, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopRightCorner, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopLeftCorner, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomLeftCorner, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomRightCorner, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::HorizontalLine, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::VerticalLine, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::CenterCross, Direction::Left));
+    wave.add_rule((MazeTile::Empty, MazeTile::Empty, Direction::Left));
+
+    wave.add_rule((MazeTile::Empty, MazeTile::TShaped, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedLeft, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedRight, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::TShapedUpsideDown, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopRightCorner, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::TopLeftCorner, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomLeftCorner, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::BottomRightCorner, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::HorizontalLine, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::VerticalLine, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::CenterCross, Direction::Right));
+    wave.add_rule((MazeTile::Empty, MazeTile::Empty, Direction::Right));
+
     let _ = wave.collapse();
 
     // TODO: FIX THIS

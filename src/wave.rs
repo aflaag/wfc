@@ -23,7 +23,7 @@ pub struct Wave<R: Rng + ?Sized + Clone, T: Tile> {
     rng: R,
 }
 
-impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
+impl<R: Rng + ?Sized + Clone, T: Tile + std::fmt::Debug> Wave<R, T> {
     pub fn new(width: usize, height: usize, rules: Vec<(T, T, Direction)>, rng: R) -> Result<Self, WaveError> {
         if width == 0 || height == 0 {
             return Err(WaveError::ZeroDimension);
@@ -96,15 +96,20 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
 
         self.tiles[y][x] = (
             if none_neighbours != neighbours_count {
-                T::iter()
+                let choice = T::iter()
                     .filter(|tile_variant| {
                         (top.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, top.unwrap(), Direction::Up))) &&
                         (bottom.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, bottom.unwrap(), Direction::Down))) &&
                         (left.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, left.unwrap(), Direction::Left))) &&
                         (right.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, right.unwrap(), Direction::Right)))
                     })
-                    .choose(&mut self.rng)
+                    .choose(&mut self.rng);
 
+                if choice.is_some() {
+                    choice
+                } else {
+                    return Err(WaveError::UncollapsibleWave);
+                }
             } else {
                 T::iter().choose(&mut self.rng)
             }
@@ -127,13 +132,13 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
 
         while collapsed < total_tiles {
             // println!("{}", collapsed);
-            for line in &self.tiles {
-                for tile in line {
-                    print!("{} ", tile.1);
-                }
-
-                print!("\n");
-            }
+            // for line in &self.tiles {
+            //     for tile in line {
+            //         print!("{} ", tile.1);
+            //     }
+            //
+            //     print!("\n");
+            // }
 
             let lowest_entropy = self
                 .tiles
