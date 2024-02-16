@@ -4,7 +4,7 @@ use rand::thread_rng;
 fn main() {
     let rng = thread_rng();
 
-    let mut wave = Wave::<_, MazeTile>::new(10, 10, vec![], rng).unwrap();
+    let mut wave = Wave::<_, MazeTile>::new(2, 2, vec![], rng).unwrap();
 
     // rules for `╦`
     wave.add_rule((MazeTile::TShaped, MazeTile::TShapedUpsideDown, Direction::Up));

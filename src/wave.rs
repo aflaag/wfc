@@ -28,9 +28,9 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
             return Err(WaveError::ZeroDimension);
         }
 
-        if T::iter().len() > usize::MAX {
-            return Err(WaveError::UnsupportedVariantsNumber)
-        }
+        // if T::iter().len() > usize::MAX {
+        //     return Err(WaveError::UnsupportedVariantsNumber)
+        // }
 
         Ok(Self {
             width,
@@ -45,109 +45,83 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
         self.rules.push(rule)
     }
 
-    fn update_bitmask(options_bitmask: &mut usize, idx: usize) {
-        if (*options_bitmask << idx) & 1 == 0 {
-            *options_bitmask += if idx == 0 {
-                1
-            } else {
-                2 << (idx - 1)
-            }
-        }
-    }
+    // fn update_bitmask(options_bitmask: &mut usize, idx: usize) {
+    //     if (*options_bitmask << idx) & 1 == 0 {
+    //         *options_bitmask += if idx == 0 {
+    //             1
+    //         } else {
+    //             2 << (idx - 1)
+    //         }
+    //     }
+    // }
 
-    fn update_entropy(&mut self, (x, y): (usize, usize)) -> Result<(), WaveError> {
+    fn choose_tile(&mut self, (x, y): (usize, usize)) -> Result<(), WaveError> {
         let mut none_neighbours = 0;
-        let mut neighbours = 0;
-
-        let mut options_bitmask: usize = 0;
+        let mut neighbours_count = 0;
+        let mut some_neighbours: u8 = 0;
 
         if let Some(diff) = y.checked_sub(1) {
-            neighbours += 1;
+            neighbours_count += 1;
 
-            let top = self.tiles[diff][x];
-
-            if let Some(top_tile) = top.0 {
-                T::iter()
-                    .enumerate()
-                    .for_each(|(idx, tile_variant)| {
-                        if self.rules.iter().any(|&r| r == (tile_variant, top_tile, Direction::Right)) {
-                            Self::update_bitmask(&mut options_bitmask, idx);
-                        }
-                    })
+            if self.tiles[diff][x].0.is_some() {
+                some_neighbours += 0b0001;
             } else {
                 none_neighbours += 1;
             }
         }
 
         if let Some(bottom_row) = self.tiles.get(y + 1) {
-            neighbours += 1;
+            neighbours_count += 1;
 
-            let bottom = bottom_row[x];
-
-            if let Some(bottom_tile) = bottom.0 {
-                T::iter()
-                    .enumerate()
-                    .for_each(|(idx, tile_variant)| {
-                        if self.rules.iter().any(|&r| r == (tile_variant, bottom_tile, Direction::Right)) {
-                            Self::update_bitmask(&mut options_bitmask, idx);
-                        }
-                    })
+            if bottom_row[x].0.is_some() {
+                some_neighbours += 0b0010;
             } else {
                 none_neighbours += 1;
             }
         }
 
         if let Some(diff) = x.checked_sub(1) {
-            neighbours += 1;
+            neighbours_count += 1;
 
-            let left = self.tiles[y][diff];
-
-            if let Some(left_tile) = left.0 {
-                T::iter()
-                    .enumerate()
-                    .for_each(|(idx, tile_variant)| {
-                        if self.rules.iter().any(|&r| r == (tile_variant, left_tile, Direction::Right)) {
-                            Self::update_bitmask(&mut options_bitmask, idx);
-                        }
-                    })
+            if self.tiles[y][diff].0.is_some() {
+                some_neighbours += 0b0100;
             } else {
                 none_neighbours += 1;
             }
         }
 
         if let Some(right) = self.tiles.get(y).unwrap().get(x + 1) {
-            neighbours += 1;
+            neighbours_count += 1;
 
-            if let Some(right_tile) = right.0 {
-                T::iter()
-                    .enumerate()
-                    .for_each(|(idx, tile_variant)| {
-                        if self.rules.iter().any(|&r| r == (tile_variant, right_tile, Direction::Right)) {
-                            Self::update_bitmask(&mut options_bitmask, idx);
-                        }
-                    })
+            if right.0.is_some() {
+                some_neighbours += 0b1000;
             } else {
                 none_neighbours += 1;
             }
         }
+        
+        // println!("{:?}: {:0b}", (x, y), options_bitmask);
 
-        self.tiles[y][x] = if none_neighbours == neighbours {
+        self.tiles[y][x] = if none_neighbours == neighbours_count {
             (T::iter().choose(&mut self.rng), 0)
         } else {
-            if let Some(chosen_idx) = <[usize; 1] as Into<BitArray<[usize; 1]>>>::into([options_bitmask])
-                .iter()
-                .enumerate()
-                .filter(|(_, bit)| *bit == true)
-                .map(|(idx, _)| idx)
-                .take(T::iter().len())
-                .choose(&mut self.rng)
-            {
-                (T::iter().nth(chosen_idx), 0)
-            } else {
-                println!("did it go here?");
-                return Err(WaveError::UncollapsibleWave);
-            }
+            todo!();
         };
+        // } else {
+        //     if let Some(chosen_idx) = <[usize; 1] as Into<BitArray<[usize; 1]>>>::into([options_bitmask])
+        //         .iter()
+        //         .enumerate()
+        //         .filter(|(_, bit)| *bit == true)
+        //         .map(|(idx, _)| idx)
+        //         .take(T::iter().len())
+        //         .choose(&mut self.rng)
+        //     {
+        //         (T::iter().nth(chosen_idx), 0)
+        //     } else {
+        //         // println!("did it go here?");
+        //         return Err(WaveError::UncollapsibleWave);
+        //     }
+        // };
 
         Ok(())
     }
@@ -160,8 +134,18 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
     pub fn collapse(&mut self) -> Result<(), WaveError> {
         let mut collapsed = 0;
 
-        while collapsed < self.width * self.height {
-            println!("{}", collapsed);
+        let total_tiles = self.width * self.height;
+
+        while collapsed < total_tiles {
+            // println!("{}", collapsed);
+            // for line in &self.tiles {
+            //     for tile in line {
+            //         print!("{} ", tile.1);
+            //     }
+            //
+            //     print!("\n");
+            // }
+
             let lowest_entropy = self
                 .tiles
                 .iter()
@@ -188,14 +172,16 @@ impl<R: Rng + ?Sized + Clone, T: Tile> Wave<R, T> {
                 .choose(&mut self.rng)
                 .unwrap(); // TODO: check
 
-            println!("{:?}", (tile_x, tile_y));
+            // println!("{:?}", (tile_x, tile_y));
 
-            if self.update_entropy((tile_x, tile_y)).is_ok() {
+            if self.choose_tile((tile_x, tile_y)).is_ok() {
                 collapsed += 1;
             } else {
-                println!("exploded");
+                // println!("exploded");
                 return Err(WaveError::NotFullyCollapsed);
             }
+
+            print!("---\n");
         }
         
         Ok(())
@@ -224,7 +210,7 @@ impl<R: Rng + ?Sized + Clone, T: Tile> fmt::Display for Wave<R, T> {
 #[derive(Debug)]
 pub enum WaveError {
     ZeroDimension,
-    UnsupportedVariantsNumber,
+    // UnsupportedVariantsNumber,
     NotFullyCollapsed,
     UncollapsibleWave,
 }
@@ -233,7 +219,7 @@ impl std::fmt::Display for WaveError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             Self::ZeroDimension => writeln!(f, "Dimensions can't be 0."),
-            Self::UnsupportedVariantsNumber => writeln!(f, "The number of variants of the tiles is too big."),
+            // Self::UnsupportedVariantsNumber => writeln!(f, "The number of variants of the tiles is too big."),
             Self::NotFullyCollapsed => writeln!(f, "The wave has not fully collapsed."),
             Self::UncollapsibleWave => writeln!(f, "Tha wave can't be collapsed any further."),
         }
