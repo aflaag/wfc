@@ -2,9 +2,9 @@
 
 ## TODO list
 
-- how the f is it possibile that i have still X tiles even with the empty variant?!
+- fix the entropy which isn't used right now
 
-- fix the fact that the non existing rules shouldn't allow tiles in some positions
+- how the f is it possibile that i have still X tiles even with the empty variant?!
 
 - fix \n in wave print
 
