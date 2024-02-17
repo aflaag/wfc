@@ -7,37 +7,37 @@ pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display + IntoEnumIterator 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
 pub enum MazeTile {
-    /// Represents `╦`
+    /// Represents `┳`
     TShaped,
 
-    /// Represents `╣`
+    /// Represents `┫`
     TShapedLeft,
 
-    /// Represents `╠`
+    /// Represents `┣`
     TShapedRight,
 
-    /// Represents `╩`
+    /// Represents `┻`
     TShapedUpsideDown,
 
-    /// Represents `╗`
+    /// Represents `┓`
     TopRightCorner,
 
-    /// Represents `╔`
+    /// Represents `┏`
     TopLeftCorner,
 
-    /// Represents `╚`
+    /// Represents `┗`
     BottomLeftCorner,
 
-    /// Represents `╝`
+    /// Represents `┛`
     BottomRightCorner,
 
-    /// Represents `═`
+    /// Represents `━`
     HorizontalLine,
 
-    /// Represents `║`
+    /// Represents `┃`
     VerticalLine,
 
-    /// Represents `╬`
+    /// Represents `╋`
     CenterCross,
     
     /// Represents ` `

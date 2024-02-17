@@ -139,11 +139,6 @@ impl<T: Tile + Hash> Wave<T> {
         Ok(())
     }
 
-    // TODO: REMOVE THIS AND FIX THE PRINT
-    pub fn tiles(&self) -> Vec<Vec<(Option<T>, usize)>> {
-        self.tiles.clone()
-    }
-
     pub fn collapse<R: Rng + ?Sized + Clone>(&mut self, rng: &mut R) -> Result<(), WaveError> {
         let mut collapsed = 0;
 
@@ -200,7 +195,8 @@ impl<T: Tile + Hash> fmt::Display for Wave<T> {
                         } else {
                             write!(f, "X")
                         }
-                    })
+                    })?;
+                writeln!(f)
             })
     }
 }

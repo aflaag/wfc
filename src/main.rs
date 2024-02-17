@@ -9,7 +9,7 @@ fn main() {
 
     let mut wave = Wave::<MazeTile>::new(100, 50, HashSet::new()).unwrap();
 
-    // rules for `╦`
+    // rules for `┳`
     wave.add_rule((MazeTile::TShaped, MazeTile::TShapedUpsideDown, Direction::Up));
     wave.add_rule((MazeTile::TShaped, MazeTile::BottomLeftCorner, Direction::Up));
     wave.add_rule((MazeTile::TShaped, MazeTile::BottomRightCorner, Direction::Up));
@@ -40,7 +40,7 @@ fn main() {
     wave.add_rule((MazeTile::TShaped, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::TShaped, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `╣`
+    // rules for `┫`
     wave.add_rule((MazeTile::TShapedLeft, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::TShapedLeft, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::TShapedLeft, MazeTile::TShapedRight, Direction::Up));
@@ -71,7 +71,7 @@ fn main() {
     wave.add_rule((MazeTile::TShapedLeft, MazeTile::VerticalLine, Direction::Right));
     wave.add_rule((MazeTile::TShapedLeft, MazeTile::Empty, Direction::Right));
 
-    // rules for `╠`
+    // rules for `┣`
     wave.add_rule((MazeTile::TShapedRight, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::TShapedRight, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::TShapedRight, MazeTile::TShapedRight, Direction::Up));
@@ -102,7 +102,7 @@ fn main() {
     wave.add_rule((MazeTile::TShapedRight, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::TShapedRight, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `╩`
+    // rules for `┻`
     wave.add_rule((MazeTile::TShapedUpsideDown, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::TShapedUpsideDown, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::TShapedUpsideDown, MazeTile::TShapedRight, Direction::Up));
@@ -132,7 +132,7 @@ fn main() {
     wave.add_rule((MazeTile::TShapedUpsideDown, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::TShapedUpsideDown, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `╗`
+    // rules for `┓`
     wave.add_rule((MazeTile::TopRightCorner, MazeTile::TShapedUpsideDown, Direction::Up));
     wave.add_rule((MazeTile::TopRightCorner, MazeTile::BottomLeftCorner, Direction::Up));
     wave.add_rule((MazeTile::TopRightCorner, MazeTile::BottomRightCorner, Direction::Up));
@@ -160,7 +160,7 @@ fn main() {
     wave.add_rule((MazeTile::TopRightCorner, MazeTile::BottomLeftCorner, Direction::Right));
     wave.add_rule((MazeTile::TopRightCorner, MazeTile::VerticalLine, Direction::Right));
 
-    // rules for ╔
+    // rules for `┏`
     wave.add_rule((MazeTile::TopLeftCorner, MazeTile::TShapedUpsideDown, Direction::Up));
     wave.add_rule((MazeTile::TopLeftCorner, MazeTile::BottomLeftCorner, Direction::Up));
     wave.add_rule((MazeTile::TopLeftCorner, MazeTile::BottomRightCorner, Direction::Up));
@@ -188,7 +188,7 @@ fn main() {
     wave.add_rule((MazeTile::TopLeftCorner, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::TopLeftCorner, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `╚`
+    // rules for `┗`
     wave.add_rule((MazeTile::BottomLeftCorner, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::BottomLeftCorner, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::BottomLeftCorner, MazeTile::TShapedRight, Direction::Up));
@@ -216,7 +216,7 @@ fn main() {
     wave.add_rule((MazeTile::BottomLeftCorner, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::BottomLeftCorner, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `╝`
+    // rules for `┛`
     wave.add_rule((MazeTile::BottomRightCorner, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::BottomRightCorner, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::BottomRightCorner, MazeTile::TShapedRight, Direction::Up));
@@ -245,7 +245,7 @@ fn main() {
     wave.add_rule((MazeTile::BottomRightCorner, MazeTile::BottomLeftCorner, Direction::Right));
     wave.add_rule((MazeTile::BottomRightCorner, MazeTile::VerticalLine, Direction::Right));
 
-    // rules for `═`
+    // rules for `━`
     wave.add_rule((MazeTile::HorizontalLine, MazeTile::TShapedUpsideDown, Direction::Up));
     wave.add_rule((MazeTile::HorizontalLine, MazeTile::BottomLeftCorner, Direction::Up));
     wave.add_rule((MazeTile::HorizontalLine, MazeTile::BottomRightCorner, Direction::Up));
@@ -274,7 +274,7 @@ fn main() {
     wave.add_rule((MazeTile::HorizontalLine, MazeTile::HorizontalLine, Direction::Right));
     wave.add_rule((MazeTile::HorizontalLine, MazeTile::CenterCross, Direction::Right));
 
-    // rules for `║`
+    // rules for `┃`
     wave.add_rule((MazeTile::VerticalLine, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::VerticalLine, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::VerticalLine, MazeTile::TShapedRight, Direction::Up));
@@ -303,7 +303,7 @@ fn main() {
     wave.add_rule((MazeTile::VerticalLine, MazeTile::VerticalLine, Direction::Right));
     wave.add_rule((MazeTile::VerticalLine, MazeTile::Empty, Direction::Right));
 
-    // rules for `╬`
+    // rules for `╋`
     wave.add_rule((MazeTile::CenterCross, MazeTile::TShaped, Direction::Up));
     wave.add_rule((MazeTile::CenterCross, MazeTile::TShapedLeft, Direction::Up));
     wave.add_rule((MazeTile::CenterCross, MazeTile::TShapedRight, Direction::Up));
@@ -363,19 +363,5 @@ fn main() {
 
     let _ = wave.collapse(&mut rng);
 
-    // TODO: FIX THIS
-    // println!("{}", wave);
-
-    // TODO: REMOVE THIS AND FIX THE PRINT
-    for line in wave.tiles() {
-        for tile in line {
-            if let Some(v) = tile.0 {
-                print!("{}", v);
-            } else {
-                print!("X");
-            }
-        }
-
-        println!();
-    }
+    println!("{}", wave);
 }
