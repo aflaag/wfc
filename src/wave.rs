@@ -38,9 +38,11 @@ impl<T: Tile + Hash> Wave<T> {
     /// # Examples
     ///
     /// ```
-    /// # use wfc::{tile::Tile, wave::Wave};
+    /// # use wfc::wave::Wave;
     /// # use std::{fmt, collections::HashSet};
     /// # use strum_macros::EnumIter;
+    /// use wfc::tile::Tile;
+    ///
     /// #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
     /// pub enum SimpleTile {
     ///     Empty,
