@@ -1,10 +1,11 @@
-use std::fmt;
+use std::{fmt, hash::Hash};
+
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display + IntoEnumIterator {}
+pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display + IntoEnumIterator + Hash {}
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
 pub enum MazeTile {
     /// Represents `╦`
     TShaped,

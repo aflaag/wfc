@@ -1,13 +1,12 @@
 use crate::tile::Tile;
 
-use std::fmt;
+use std::{collections::HashSet, fmt, hash::Hash};
 
 use rand::{Rng, seq::IteratorRandom};
-// use bitvec::prelude::*;
 
 const DIRECTIONS_ORDER: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
     Down,
@@ -16,16 +15,16 @@ pub enum Direction {
 }
 
 #[derive(Debug, Clone)]
-pub struct Wave<T: Tile> {
+pub struct Wave<T: Tile + Hash> {
     width: usize,
     height: usize,
     tiles: Vec<Vec<(Option<T>, usize)>>,
     variants_total: usize,
-    rules: Vec<(T, T, Direction)>,
+    rules: HashSet<(T, T, Direction)>,
 }
 
-impl<T: Tile> Wave<T> {
-    pub fn new(width: usize, height: usize, rules: Vec<(T, T, Direction)>) -> Result<Self, WaveError> {
+impl<T: Tile + Hash> Wave<T> {
+    pub fn new(width: usize, height: usize, rules: HashSet<(T, T, Direction)>) -> Result<Self, WaveError> {
         if width == 0 || height == 0 {
             return Err(WaveError::ZeroDimension);
         }
@@ -42,7 +41,11 @@ impl<T: Tile> Wave<T> {
     }
 
     pub fn add_rule(&mut self, rule: (T, T, Direction)) {
-        self.rules.push(rule)
+        let _ = self.rules.insert(rule);
+    }
+
+    pub fn remove_rule(&mut self, rule: (T, T, Direction)) {
+        let _ = self.rules.remove(&rule);
     }
 
     fn neighbours_info(&self, (x, y): (usize, usize)) -> ([bool; 4], [Option<T>; 4]) {
@@ -50,6 +53,7 @@ impl<T: Tile> Wave<T> {
 
         let mut neighbours = [None; 4];
 
+        // TODO: pensa se ci sta un modo migliore di scrivere sta cosa
         if let Some(diff) = y.checked_sub(1) {
             availables[0] = true;
 
@@ -85,14 +89,7 @@ impl<T: Tile> Wave<T> {
                 neighbours
                     .iter()
                     .zip(DIRECTIONS_ORDER)
-                    .all(|(n, d)| {
-                        n.map_or(true, |v| {
-                            self
-                                .rules
-                                .iter()
-                                .any(|&r| r == (*tile_variant, v, d))
-                        })
-                    })
+                    .all(|(n, d)| n.map_or(true, |v| self.rules.get(&(*tile_variant, v, d)).is_some()))
             })
             .count();
     }
@@ -101,10 +98,10 @@ impl<T: Tile> Wave<T> {
         let (availables, neighbours) = self.neighbours_info((x, y));
 
         self.tiles[y][x] = (
-            if (!availables[0] || neighbours[0].is_none()) &&
-                (!availables[1] || neighbours[1].is_none()) &&
-                (!availables[2] || neighbours[2].is_none()) &&
-                (!availables[3] || neighbours[3].is_none())
+            if availables
+                .iter()
+                .zip(neighbours)
+                .all(|(a, n)| !a || n.is_none())
             {
                 T::iter().choose(rng)
             } else {
@@ -113,14 +110,7 @@ impl<T: Tile> Wave<T> {
                         neighbours
                             .iter()
                             .zip(DIRECTIONS_ORDER)
-                            .all(|(n, d)| {
-                                n.map_or(true, |v| {
-                                    self
-                                        .rules
-                                        .iter()
-                                        .any(|&r| r == (*tile_variant, v, d))
-                                })
-                            })
+                            .all(|(n, d)| n.map_or(true, |v| self.rules.get(&(*tile_variant, v, d)).is_some()))
                     })
                     .choose(rng);
 
@@ -171,9 +161,9 @@ impl<T: Tile> Wave<T> {
                      .unwrap_or(self.variants_total)
                 )
                 .min()
-                .unwrap(); // TODO: check, shouldn't ever crash theoretically
+                .unwrap();
 
-            let (tile_x, tile_y) = self
+            let tile_coords = self
                 .tiles
                 .iter()
                 .enumerate()
@@ -183,21 +173,20 @@ impl<T: Tile> Wave<T> {
                      .filter(|(_, tile)| tile.1 == lowest_entropy)
                      .map(move |(x, _)| (x, y))
                 )
-                .choose(rng)
-                .unwrap(); // TODO: check
+                .choose(rng);
 
-            if self.choose_tile((tile_x, tile_y), rng).is_ok() {
-                collapsed += 1;
-            } else {
+            if tile_coords.is_none() || self.choose_tile(tile_coords.unwrap(), rng).is_err() {
                 return Err(WaveError::NotFullyCollapsed);
             }
+
+            collapsed += 1;
         }
         
         Ok(())
     }
 }
 
-impl<T: Tile> fmt::Display for Wave<T> {
+impl<T: Tile + Hash> fmt::Display for Wave<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self
             .tiles

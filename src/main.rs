@@ -1,11 +1,14 @@
 use wfc::{tile::MazeTile, wave::{Direction, Wave}};
+
+use std::collections::HashSet;
+
 use rand::thread_rng;
 
 fn main() {
     let mut rng = thread_rng();
 
     // let mut wave = Wave::<MazeTile>::new(2, 2, vec![]).unwrap();
-    let mut wave = Wave::<MazeTile>::new(100, 50, vec![]).unwrap();
+    let mut wave = Wave::<MazeTile>::new(100, 50, HashSet::new()).unwrap();
 
     // rules for `╦`
     wave.add_rule((MazeTile::TShaped, MazeTile::TShapedUpsideDown, Direction::Up));
@@ -374,6 +377,6 @@ fn main() {
             }
         }
 
-        print!("\n");
+        println!();
     }
 }
