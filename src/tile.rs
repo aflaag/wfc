@@ -6,7 +6,7 @@ use strum_macros::EnumIter;
 /// Represents a wave tile.
 pub trait Tile: PartialEq + Eq + Clone + Copy + IntoEnumIterator + Hash {}
 
-/// Reperesents a tile of a Maze.
+/// Represents the tiles of a Maze.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
 pub enum MazeTile {
     /// Represents `┳`
