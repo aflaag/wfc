@@ -41,9 +41,9 @@ pub enum MazeTile {
 
     /// Represents `╋`
     CenterCross,
-    
+
     /// Represents ` `
-    Empty
+    Empty,
 }
 
 impl Tile for MazeTile {}

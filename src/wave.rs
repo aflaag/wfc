@@ -2,11 +2,16 @@ use crate::tile::Tile;
 
 use std::{collections::HashSet, fmt, hash::Hash};
 
-use rand::{Rng, seq::IteratorRandom};
+use rand::{seq::IteratorRandom, Rng};
 
 /// Represents the order of which
 /// the neighbours of a tile are going to be visited.
-const DIRECTIONS_ORDER: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
+const DIRECTIONS_ORDER: [Direction; 4] = [
+    Direction::Up,
+    Direction::Down,
+    Direction::Left,
+    Direction::Right,
+];
 
 /// Represents a direction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -31,7 +36,7 @@ impl<T: Tile + Hash> Wave<T> {
     /// Returns a new wave.
     ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use wfc::{tile::Tile, wave::Wave};
     /// # use std::{fmt, collections::HashSet};
@@ -41,12 +46,16 @@ impl<T: Tile + Hash> Wave<T> {
     ///     Empty,
     ///     Filled,
     /// }
-    /// 
+    ///
     /// impl Tile for SimpleTile {}
-    /// 
+    ///
     /// let wave = Wave::<SimpleTile>::new(10, 10, HashSet::new()).unwrap();
     /// ```
-    pub fn new(width: usize, height: usize, rules: HashSet<(T, T, Direction)>) -> Result<Self, WaveError> {
+    pub fn new(
+        width: usize,
+        height: usize,
+        rules: HashSet<(T, T, Direction)>,
+    ) -> Result<Self, WaveError> {
         if width == 0 || height == 0 {
             return Err(WaveError::ZeroDimension);
         }
@@ -56,7 +65,9 @@ impl<T: Tile + Hash> Wave<T> {
         Ok(Self {
             width,
             height,
-            tiles: (0..height).map(|_| (0..width).map(|_| (None, variants_total)).collect()).collect(),
+            tiles: (0..height)
+                .map(|_| (0..width).map(|_| (None, variants_total)).collect())
+                .collect(),
             variants_total,
             rules,
         })
@@ -66,7 +77,7 @@ impl<T: Tile + Hash> Wave<T> {
     /// `first_tile` can be placed next to `second_tile` in the `direction` direction.
     ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use wfc::{tile::Tile, wave::{Wave, Direction}};
     /// # use std::{fmt, collections::HashSet};
@@ -89,7 +100,7 @@ impl<T: Tile + Hash> Wave<T> {
     /// `first_tile` can be placed next to `second_tile` in the `direction` direction.
     ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use wfc::{tile::Tile, wave::{Wave, Direction}};
     /// # use std::{fmt, collections::HashSet};
@@ -158,7 +169,11 @@ impl<T: Tile + Hash> Wave<T> {
     }
 
     /// Updates the tile in the given coordinates, based on its neighbours.
-    fn update_tile<R: Rng + ?Sized + Clone>(&mut self, (x, y): (usize, usize), rng: &mut R) -> Result<(), WaveError> {
+    fn update_tile<R: Rng + ?Sized + Clone>(
+        &mut self,
+        (x, y): (usize, usize),
+        rng: &mut R,
+    ) -> Result<(), WaveError> {
         let (availables, neighbours) = self.neighbours_info((x, y));
 
         self.tiles[y][x] = (
@@ -178,30 +193,29 @@ impl<T: Tile + Hash> Wave<T> {
                 } else {
                     return Err(WaveError::UncollapsibleWave);
                 }
-            }
-            ,
-            0
+            },
+            0,
         );
 
         [
             (Some(x), y.checked_sub(1)),
             (Some(x), Some(y + 1)),
             (x.checked_sub(1), Some(y)),
-            (Some(x + 1), Some(y))
+            (Some(x + 1), Some(y)),
         ]
-            .iter()
-            .zip(availables)
-            .zip(neighbours)
-            .filter(|((_, a), n)| *a && n.is_none())
-            .for_each(|(((x, y), _), _)| {
-                let (n_x, n_y) = (x.unwrap(), y.unwrap());
+        .iter()
+        .zip(availables)
+        .zip(neighbours)
+        .filter(|((_, a), n)| *a && n.is_none())
+        .for_each(|(((x, y), _), _)| {
+            let (n_x, n_y) = (x.unwrap(), y.unwrap());
 
-                let (_, neighbours) = self.neighbours_info((n_x, n_y));
+            let (_, neighbours) = self.neighbours_info((n_x, n_y));
 
-                self.tiles[n_y][n_x].1 = T::iter()
-                    .filter(|tile_variant| self.is_valid_tile_variant(*tile_variant, neighbours))
-                    .count();
-            });
+            self.tiles[n_y][n_x].1 = T::iter()
+                .filter(|tile_variant| self.is_valid_tile_variant(*tile_variant, neighbours))
+                .count();
+        });
 
         Ok(())
     }
@@ -209,7 +223,7 @@ impl<T: Tile + Hash> Wave<T> {
     /// Collapses the wave, using the Wave Function Collapse algorithm.
     ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// # use wfc::{tile::Tile, wave::{Wave, Direction}};
     /// # use std::{fmt, collections::HashSet};
@@ -222,11 +236,11 @@ impl<T: Tile + Hash> Wave<T> {
     /// # }
     /// # impl Tile for SimpleTile {}
     /// let mut rng = thread_rng();
-    /// 
+    ///
     /// let mut wave = Wave::<SimpleTile>::new(10, 10, HashSet::new()).unwrap();
     ///
     /// wave.add_rule((SimpleTile::Empty, SimpleTile::Filled, Direction::Right));
-    /// 
+    ///
     /// let outcome = wave.collapse(&mut rng);
     /// ```
     pub fn collapse<R: Rng + ?Sized + Clone>(&mut self, rng: &mut R) -> Result<(), WaveError> {
@@ -238,13 +252,13 @@ impl<T: Tile + Hash> Wave<T> {
             let lowest_entropy = self
                 .tiles
                 .iter()
-                .map(|row| row
-                     .iter()
-                     .map(|tile| tile.1)
-                     .filter(|entropy| *entropy != 0)
-                     .min()
-                     .unwrap_or(self.variants_total)
-                )
+                .map(|row| {
+                    row.iter()
+                        .map(|tile| tile.1)
+                        .filter(|entropy| *entropy != 0)
+                        .min()
+                        .unwrap_or(self.variants_total)
+                })
                 .min()
                 .unwrap();
 
@@ -252,12 +266,12 @@ impl<T: Tile + Hash> Wave<T> {
                 .tiles
                 .iter()
                 .enumerate()
-                .flat_map(|(y, row)| row
-                     .iter()
-                     .enumerate()
-                     .filter(|(_, tile)| tile.1 == lowest_entropy)
-                     .map(move |(x, _)| (x, y))
-                )
+                .flat_map(|(y, row)| {
+                    row.iter()
+                        .enumerate()
+                        .filter(|(_, tile)| tile.1 == lowest_entropy)
+                        .map(move |(x, _)| (x, y))
+                })
                 .choose(rng);
 
             if tile_coords.is_none() || self.update_tile(tile_coords.unwrap(), rng).is_err() {
@@ -266,28 +280,23 @@ impl<T: Tile + Hash> Wave<T> {
 
             collapsed += 1;
         }
-        
+
         Ok(())
     }
 }
 
 impl<T: Tile + Hash + fmt::Display> fmt::Display for Wave<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self
-            .tiles
-            .iter()
-            .try_for_each(|row| {
-                row
-                    .iter()
-                    .try_for_each(|tile| {
-                        if let Some(v) = tile.0 {
-                            write!(f, "{}", v)
-                        } else {
-                            write!(f, "X")
-                        }
-                    })?;
-                writeln!(f)
-            })
+        self.tiles.iter().try_for_each(|row| {
+            row.iter().try_for_each(|tile| {
+                if let Some(v) = tile.0 {
+                    write!(f, "{}", v)
+                } else {
+                    write!(f, "X")
+                }
+            })?;
+            writeln!(f)
+        })
     }
 }
 

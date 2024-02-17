@@ -1,2 +1,2 @@
-pub mod wave;
 pub mod tile;
+pub mod wave;
