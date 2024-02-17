@@ -5,6 +5,8 @@ use std::fmt;
 use rand::{Rng, seq::IteratorRandom};
 // use bitvec::prelude::*;
 
+const DIRECTIONS_ORDER: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Up,
@@ -43,93 +45,82 @@ impl<T: Tile> Wave<T> {
         self.rules.push(rule)
     }
 
-    fn neighbours_info(&self, (x, y): (usize, usize)) -> (bool, bool, bool, bool, Option<T>, Option<T>, Option<T>, Option<T>) {
-        let mut top_available = false;
-        let mut bottom_available = false;
-        let mut left_available = false;
-        let mut right_available = false;
+    fn neighbours_info(&self, (x, y): (usize, usize)) -> ([bool; 4], [Option<T>; 4]) {
+        let mut availables = [false; 4];
 
-        let mut top = None;
-        let mut bottom = None;
-        let mut left = None;
-        let mut right = None;
+        let mut neighbours = [None; 4];
 
         if let Some(diff) = y.checked_sub(1) {
-            top_available = true;
+            availables[0] = true;
 
-            if self.tiles[diff][x].0.is_some() {
-                top = self.tiles[diff][x].0;
-            }
+            neighbours[0] = self.tiles[diff][x].0;
         }
 
         if let Some(bottom_row) = self.tiles.get(y + 1) {
-            bottom_available = true;
+            availables[1] = true;
 
-            if bottom_row[x].0.is_some() {
-                bottom = bottom_row[x].0;
-            }
+            neighbours[1] = bottom_row[x].0;
         }
 
         if let Some(diff) = x.checked_sub(1) {
-            left_available = true;
+            availables[2] = true;
 
-            if self.tiles[y][diff].0.is_some() {
-                left = self.tiles[y][diff].0;
-            }
+            neighbours[2] = self.tiles[y][diff].0;
         }
 
         if let Some(right_tile) = self.tiles.get(y).unwrap().get(x + 1) {
-            right_available = true;
+            availables[3] = true;
 
-            if right_tile.0.is_some() {
-                right = right_tile.0;
-            }
+            neighbours[3] = right_tile.0;
         }
 
-        (
-            top_available,
-            bottom_available,
-            left_available,
-            right_available,
-            top,
-            bottom,
-            left,
-            right
-        )
+        (availables, neighbours)
     }
 
     fn update_neighbour_entropy(&mut self, (n_x, n_y): (usize, usize)) {
-        let (_, _, _, _, top, bottom, left, right) = self.neighbours_info((n_x, n_y));
+        let (_, neighbours) = self.neighbours_info((n_x, n_y));
 
         self.tiles[n_y][n_x].1 = T::iter()
             .filter(|tile_variant| {
-                // TODO: ricontrolla che questa cosa sia giusta
-                (top.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, top.unwrap(), Direction::Up))) &&
-                (bottom.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, bottom.unwrap(), Direction::Down))) &&
-                (left.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, left.unwrap(), Direction::Left))) &&
-                (right.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, right.unwrap(), Direction::Right)))
+                neighbours
+                    .iter()
+                    .zip(DIRECTIONS_ORDER)
+                    .all(|(n, d)| {
+                        n.map_or(true, |v| {
+                            self
+                                .rules
+                                .iter()
+                                .any(|&r| r == (*tile_variant, v, d))
+                        })
+                    })
             })
             .count();
     }
 
     fn choose_tile<R: Rng + ?Sized + Clone>(&mut self, (x, y): (usize, usize), rng: &mut R) -> Result<(), WaveError> {
-        let (top_available, bottom_available, left_available, right_available, top, bottom, left, right) = self.neighbours_info((x, y));
+        let (availables, neighbours) = self.neighbours_info((x, y));
 
-        // TODO: check telegram
         self.tiles[y][x] = (
-            if (!top_available || top.is_none()) &&
-                (!bottom_available || bottom.is_none()) &&
-                (!left_available || left.is_none()) &&
-                (!right_available || right.is_none())
+            if (!availables[0] || neighbours[0].is_none()) &&
+                (!availables[1] || neighbours[1].is_none()) &&
+                (!availables[2] || neighbours[2].is_none()) &&
+                (!availables[3] || neighbours[3].is_none())
             {
                 T::iter().choose(rng)
             } else {
                 let choice = T::iter()
                     .filter(|tile_variant| {
-                        (top.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, top.unwrap(), Direction::Up))) &&
-                        (bottom.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, bottom.unwrap(), Direction::Down))) &&
-                        (left.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, left.unwrap(), Direction::Left))) &&
-                        (right.is_none() || self.rules.iter().any(|&r| r == (*tile_variant, right.unwrap(), Direction::Right)))
+                        neighbours
+                            .iter()
+                            .zip(DIRECTIONS_ORDER)
+                            .all(|(n, d)| {
+                                n.map_or(true, |v| {
+                                    self
+                                        .rules
+                                        .iter()
+                                        .any(|&r| r == (*tile_variant, v, d))
+                                })
+                            })
                     })
                     .choose(rng);
 
@@ -143,21 +134,17 @@ impl<T: Tile> Wave<T> {
             0
         );
 
-        if top_available && top.is_none() {
-            self.update_neighbour_entropy((x, y - 1));
-        }
-
-        if bottom_available && bottom.is_none() {
-            self.update_neighbour_entropy((x, y + 1));
-        }
-
-        if left_available && left.is_none() {
-            self.update_neighbour_entropy((x - 1, y));
-        }
-
-        if right_available && right.is_none() {
-            self.update_neighbour_entropy((x + 1, y));
-        }
+        [
+            (Some(x), y.checked_sub(1)),
+            (Some(x), Some(y + 1)),
+            (x.checked_sub(1), Some(y)),
+            (Some(x + 1), Some(y))
+        ]
+            .iter()
+            .zip(availables)
+            .zip(neighbours)
+            .filter(|((_, a), n)| *a && n.is_none())
+            .for_each(|(((x, y), _), _)| self.update_neighbour_entropy((x.unwrap(), y.unwrap())));
 
         Ok(())
     }
@@ -173,15 +160,6 @@ impl<T: Tile> Wave<T> {
         let total_tiles = self.width * self.height;
 
         while collapsed < total_tiles {
-            // println!("{}", collapsed);
-            // for line in &self.tiles {
-            //     for tile in line {
-            //         print!("{} ", tile.1);
-            //     }
-            //
-            //     print!("\n");
-            // }
-
             let lowest_entropy = self
                 .tiles
                 .iter()
@@ -208,16 +186,11 @@ impl<T: Tile> Wave<T> {
                 .choose(rng)
                 .unwrap(); // TODO: check
 
-            // println!("{:?}", (tile_x, tile_y));
-
             if self.choose_tile((tile_x, tile_y), rng).is_ok() {
                 collapsed += 1;
             } else {
-                // println!("exploded");
                 return Err(WaveError::NotFullyCollapsed);
             }
-
-            // print!("---\n");
         }
         
         Ok(())
@@ -246,7 +219,6 @@ impl<T: Tile> fmt::Display for Wave<T> {
 #[derive(Debug)]
 pub enum WaveError {
     ZeroDimension,
-    // UnsupportedVariantsNumber,
     NotFullyCollapsed,
     UncollapsibleWave,
 }
@@ -255,7 +227,6 @@ impl std::fmt::Display for WaveError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             Self::ZeroDimension => writeln!(f, "Dimensions can't be 0."),
-            // Self::UnsupportedVariantsNumber => writeln!(f, "The number of variants of the tiles is too big."),
             Self::NotFullyCollapsed => writeln!(f, "The wave has not fully collapsed."),
             Self::UncollapsibleWave => writeln!(f, "Tha wave can't be collapsed any further."),
         }

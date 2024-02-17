@@ -2,7 +2,7 @@
 
 ## TODO list
 
-- rifai le regole del vuoto affinché si generino meno vuoti
+- rifai le regole in modo da poter generare labirinti
 
 - leggi telegram
 
@@ -10,5 +10,7 @@
 
 - make the rules a hashmap (can i?)
 - add the rules in the vec instead of pushing them one by one
+
+- se non usi bit_vec levalo dal toml
 
 - this README
