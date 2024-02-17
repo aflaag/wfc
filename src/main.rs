@@ -7,7 +7,6 @@ use rand::thread_rng;
 fn main() {
     let mut rng = thread_rng();
 
-    // let mut wave = Wave::<MazeTile>::new(2, 2, vec![]).unwrap();
     let mut wave = Wave::<MazeTile>::new(100, 50, HashSet::new()).unwrap();
 
     // rules for `╦`
@@ -365,7 +364,7 @@ fn main() {
     let _ = wave.collapse(&mut rng);
 
     // TODO: FIX THIS
-    // println!("{}", wave);
+    println!("{}", wave);
 
     // TODO: REMOVE THIS AND FIX THE PRINT
     for line in wave.tiles() {
