@@ -364,7 +364,7 @@ fn main() {
     let _ = wave.collapse(&mut rng);
 
     // TODO: FIX THIS
-    println!("{}", wave);
+    // println!("{}", wave);
 
     // TODO: REMOVE THIS AND FIX THE PRINT
     for line in wave.tiles() {
