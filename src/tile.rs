@@ -3,8 +3,10 @@ use std::{fmt, hash::Hash};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-pub trait Tile: PartialEq + Eq + Clone + Copy + fmt::Display + IntoEnumIterator + Hash {}
+/// Represents a wave tile.
+pub trait Tile: PartialEq + Eq + Clone + Copy + IntoEnumIterator + Hash {}
 
+/// Reperesents a tile of a Maze.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
 pub enum MazeTile {
     /// Represents `┳`

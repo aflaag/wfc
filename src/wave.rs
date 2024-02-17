@@ -4,8 +4,11 @@ use std::{collections::HashSet, fmt, hash::Hash};
 
 use rand::{Rng, seq::IteratorRandom};
 
+/// Represents the order of which
+/// the neighbours of a tile are going to be visited.
 const DIRECTIONS_ORDER: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
 
+/// Represents a direction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
@@ -14,6 +17,7 @@ pub enum Direction {
     Right,
 }
 
+/// Represents a wave state.
 #[derive(Debug, Clone)]
 pub struct Wave<T: Tile + Hash> {
     width: usize,
@@ -24,6 +28,25 @@ pub struct Wave<T: Tile + Hash> {
 }
 
 impl<T: Tile + Hash> Wave<T> {
+    /// Returns a new wave.
+    ///
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wfc::{tile::Tile, wave::Wave};
+    /// # use std::{fmt, collections::HashSet};
+    /// # use strum_macros::EnumIter;
+    /// 
+    /// #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
+    /// pub enum SimpleTile {
+    ///     Empty,
+    ///     Filled,
+    /// }
+    /// 
+    /// impl Tile for SimpleTile {}
+    /// 
+    /// let wave = Wave::<SimpleTile>::new(10, 10, HashSet::new()).unwrap();
+    /// ```
     pub fn new(width: usize, height: usize, rules: HashSet<(T, T, Direction)>) -> Result<Self, WaveError> {
         if width == 0 || height == 0 {
             return Err(WaveError::ZeroDimension);
@@ -40,20 +63,69 @@ impl<T: Tile + Hash> Wave<T> {
         })
     }
 
+    /// Returns a new wave.
+    ///
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wfc::{tile::Tile, wave::{Wave, Direction}};
+    /// # use std::{fmt, collections::HashSet};
+    /// # use strum_macros::EnumIter;
+    /// 
+    /// # #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
+    /// # pub enum SimpleTile {
+    /// #     Empty,
+    /// #     Filled,
+    /// # }
+    /// 
+    /// # impl Tile for SimpleTile {}
+    /// 
+    /// let mut wave = Wave::<SimpleTile>::new(10, 10, HashSet::new()).unwrap();
+    ///
+    /// wave.add_rule((SimpleTile::Empty, SimpleTile::Filled, Direction::Right)); // now a filled tile can be on the right of an empty tile
+    /// ```
     pub fn add_rule(&mut self, rule: (T, T, Direction)) {
         let _ = self.rules.insert(rule);
     }
 
+    /// Returns a new wave.
+    ///
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wfc::{tile::Tile, wave::{Wave, Direction}};
+    /// # use std::{fmt, collections::HashSet};
+    /// # use strum_macros::EnumIter;
+    /// 
+    /// # #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, Hash)]
+    /// # pub enum SimpleTile {
+    /// #     Empty,
+    /// #     Filled,
+    /// # }
+    /// 
+    /// # impl Tile for SimpleTile {}
+    /// 
+    /// let mut wave = Wave::<SimpleTile>::new(10, 10, HashSet::new()).unwrap();
+    ///
+    /// wave.remove_rule((SimpleTile::Empty, SimpleTile::Filled, Direction::Right)); // now a filled tile can't be on the right of an empty tile anymore
+    /// ```
     pub fn remove_rule(&mut self, rule: (T, T, Direction)) {
         let _ = self.rules.remove(&rule);
     }
 
+    /// Returns the following two arrays:
+    ///   - the first is a `[bool; 4]` array in which the _i_-th element
+    ///   of the array is `true` if and only if the corresponding
+    ///   (following the order defined by [`DIRECTIONS_ORDER`]) neighbour exists;
+    ///   - the second is an `[Option<T>; 4]` array in which the _i_-th element
+    ///   of the array is `None` if the corresponding (following the order defined
+    ///   by [`DIRECTIONS_ORDER`]) neighbour either does not exists or it's `None`
+    ///   because it hasn't collapsed yet.
     fn neighbours_info(&self, (x, y): (usize, usize)) -> ([bool; 4], [Option<T>; 4]) {
         let mut availables = [false; 4];
 
         let mut neighbours = [None; 4];
 
-        // TODO: pensa se ci sta un modo migliore di scrivere sta cosa
         if let Some(diff) = y.checked_sub(1) {
             availables[0] = true;
 
@@ -81,16 +153,18 @@ impl<T: Tile + Hash> Wave<T> {
         (availables, neighbours)
     }
 
+    fn is_valid_tile_variant(&self, tile_variant: T, neighbours: [Option<T>; 4]) -> bool {
+        neighbours
+            .iter()
+            .zip(DIRECTIONS_ORDER)
+            .all(|(n, d)| n.map_or(true, |v| self.rules.get(&(tile_variant, v, d)).is_some()))
+    }
+
     fn update_neighbour_entropy(&mut self, (n_x, n_y): (usize, usize)) {
         let (_, neighbours) = self.neighbours_info((n_x, n_y));
 
         self.tiles[n_y][n_x].1 = T::iter()
-            .filter(|tile_variant| {
-                neighbours
-                    .iter()
-                    .zip(DIRECTIONS_ORDER)
-                    .all(|(n, d)| n.map_or(true, |v| self.rules.get(&(*tile_variant, v, d)).is_some()))
-            })
+            .filter(|tile_variant| self.is_valid_tile_variant(*tile_variant, neighbours))
             .count();
     }
 
@@ -106,12 +180,7 @@ impl<T: Tile + Hash> Wave<T> {
                 T::iter().choose(rng)
             } else {
                 let choice = T::iter()
-                    .filter(|tile_variant| {
-                        neighbours
-                            .iter()
-                            .zip(DIRECTIONS_ORDER)
-                            .all(|(n, d)| n.map_or(true, |v| self.rules.get(&(*tile_variant, v, d)).is_some()))
-                    })
+                    .filter(|tile_variant| self.is_valid_tile_variant(*tile_variant, neighbours))
                     .choose(rng);
 
                 if choice.is_some() {
@@ -181,7 +250,7 @@ impl<T: Tile + Hash> Wave<T> {
     }
 }
 
-impl<T: Tile + Hash> fmt::Display for Wave<T> {
+impl<T: Tile + Hash + fmt::Display> fmt::Display for Wave<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self
             .tiles
